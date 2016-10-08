@@ -21,7 +21,7 @@ public class HealthIndicator extends JavaPlugin {
 	public String cprefix = "[HealthIndicator] ";
 	public String prefix = "§8[§e§lHealthIndicator§8] §r";
 	
-	static int resource = -1;
+	static int resource = 30196;
 	
 	Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
 	Objective obj = board.registerNewObjective("HealthIndicator", "Nathan_N");

@@ -2,7 +2,7 @@ name: HealthIndicator
 author: Nathan_N
 version: 1.0
 description: This plugin shows the health of other players in specified worlds below their name
-website: https://github.com/nathannr/healthindicator
+website: https://www.spigotmc.org/resources/30196/
 main: com.github.nathannr.healthindicator.HealthIndicator
 commands:
   healthindicator:
