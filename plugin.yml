@@ -1,0 +1,17 @@
+name: HealthIndicator
+author: Nathan_N
+version: 1.0
+description: This plugin shows the health of other players in specified worlds below their name
+website: https://github.com/nathannr/healthindicator
+main: com.github.nathannr.healthindicator.HealthIndicator
+commands:
+  healthindicator:
+    description: Information about the plugin or reload the plugin
+    usage: /<command> [reload]
+    aliases: [hi, damageindicator, di]
+permission:
+  healthindicator.*:
+    description: HealthIndicator permission
+  healthindicator.reload:
+    description: Allows you to reload the plugin
+    default: OP
