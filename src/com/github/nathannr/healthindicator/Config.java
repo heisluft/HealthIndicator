@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.file.YamlConfigurationOptions;
@@ -28,7 +30,12 @@ public class Config {
 				worlds.add(w.getName());
 			}
 			cfg.set("HealthIndicator.Worlds", worlds);
-		} else {
+			try {
+				cfg.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	//		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "reload"); //To fix a bug
 		}
 		
 		cfg.options().copyDefaults(true);

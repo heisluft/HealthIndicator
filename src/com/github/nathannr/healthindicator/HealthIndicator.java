@@ -70,8 +70,11 @@ public class HealthIndicator extends JavaPlugin {
 	public void createIndicator() {
 		
 		board.getObjectivesByCriteria(Criterias.HEALTH);
-		
-		obj.setDisplayName(ChatColor.translateAlternateColorCodes('&', cfg.getString("HealthIndicator.HealthDescription")));
+		try {
+		obj.setDisplayName(ChatColor.translateAlternateColorCodes('&',  cfg.getString("HealthIndicator.HealthDescription")));
+		} catch (Exception e) {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "reload"); //Bug?
+		}
 		obj.setDisplaySlot(DisplaySlot.BELOW_NAME);
 	}
 	
