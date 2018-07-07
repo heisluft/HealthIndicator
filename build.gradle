@@ -1,0 +1,19 @@
+group 'de.heisluft.healthindicator'
+version '1.0.0'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    //For Spigot
+    mavenLocal()
+    //For JUnit
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot:1.12.2-R0.1-SNAPSHOT'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+}
