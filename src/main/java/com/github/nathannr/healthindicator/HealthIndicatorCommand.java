@@ -52,19 +52,19 @@ public class HealthIndicatorCommand implements CommandExecutor {
 		return true;
 	}
 
-	String rlwarning = " §c§lThis command works at the moment ONLY for the language file! Please use '/rl' of Bukkit to reload the enabled worlds and the other options of the config file!§r";
+	String rlwarning = " Â§cÂ§lThis command works at the moment ONLY for the language file! Please use '/rl' of Bukkit to reload the enabled worlds and the other options of the config file!Â§r";
 	String crlwarning = " This command works at the moment ONLY for the language file!";
 
 	public void reloadPlugin(CommandSender sender) {
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
 			if (p.hasPermission("healthindicator.reload")) {
-				p.sendMessage(plugin.prefix + "§aReloading HealthIndicator...§r");
+				p.sendMessage(plugin.prefix + "Â§aReloading HealthIndicator...Â§r");
 				System.out.println(
 						plugin.cprefix + p.getName() + " (" + p.getUniqueId() + "): Reloading HealthIndicator...");
 				plugin.onDisable();
 				plugin.onEnable();
-				p.sendMessage(plugin.prefix + "§aReload complete!" + rlwarning + "§r");
+				p.sendMessage(plugin.prefix + "Â§aReload complete!" + rlwarning + "Â§r");
 				System.out.println(
 						plugin.cprefix + p.getName() + " (" + p.getUniqueId() + "): Reload complete!" + crlwarning);
 
@@ -72,7 +72,7 @@ public class HealthIndicatorCommand implements CommandExecutor {
 				System.out.println(plugin.cprefix + p.getName() + " (" + p.getUniqueId()
 						+ ") tried to reload HealthIndicator: Permission 'healthindicator.reload' is missing!");
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&',
-						plugin.prefix + cfg.getString("HealthIndicator.Language.NoPermission") + "§r"));
+						plugin.prefix + cfg.getString("HealthIndicator.Language.NoPermission") + "Â§r"));
 			}
 		} else {
 			System.out.println(plugin.cprefix + "Reloading HealthIndicator...");

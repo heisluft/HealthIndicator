@@ -36,7 +36,7 @@ import org.bukkit.scoreboard.Scoreboard;
 public class HealthIndicator extends JavaPlugin {
 
 	public String cprefix = "[HealthIndicator] ";
-	public String prefix = "§8[§e§lHealthIndicator§8] §r";
+	public String prefix = "Â§8[Â§eÂ§lHealthIndicatorÂ§8] Â§r";
 
 	static int resource = 30196;
 
