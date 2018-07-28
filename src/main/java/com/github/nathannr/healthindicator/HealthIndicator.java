@@ -57,12 +57,6 @@ public class HealthIndicator extends JavaPlugin {
 		initCmds();
 		createIndicator();
 		runIndicator();
-		try {
-			Metrics metrics = new Metrics(this);
-			metrics.start();
-		} catch (IOException e) {
-			// e.printStackTrace();
-		}
 		System.out.println(
 				cprefix + "HealthIndicator by Nathan_N version " + this.getDescription().getVersion() + " enabled.");
 	}
