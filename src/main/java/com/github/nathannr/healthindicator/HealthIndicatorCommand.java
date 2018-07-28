@@ -18,16 +18,19 @@
 package com.github.nathannr.healthindicator;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-public class HealthIndicatorCommand implements CommandExecutor {
+public class HealthIndicatorCommand implements CommandExecutor, TabCompleter {
 
 	File file = new File("plugins/HealthIndicator/language.yml");
 	FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
@@ -38,14 +41,16 @@ public class HealthIndicatorCommand implements CommandExecutor {
 
 	public HealthIndicatorCommand(HealthIndicator plugin) {
 		this.plugin = plugin;
+		plugin.getCommand("healthindicator").setExecutor(this);
+		plugin.getCommand("healthindicator").setTabCompleter(this);
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length != 1) {
-			plugin.sendInfo(sender);
+			sendInfo(sender);
 		} else {
-			if (args[0].equalsIgnoreCase("reload") || args[1].equalsIgnoreCase("rl")) {
+			if (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")) {
 				reloadPlugin(sender);
 			}
 		}
@@ -80,5 +85,25 @@ public class HealthIndicatorCommand implements CommandExecutor {
 			plugin.onEnable();
 			System.out.println(plugin.cprefix + "Reload complete!" + crlwarning);
 		}
+	}
+
+	public void sendInfo(CommandSender sender) {
+		sender.sendMessage(
+				ChatColor.DARK_BLUE + "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-" + ChatColor.RESET);
+		sender.sendMessage(ChatColor.BLUE + "HealthIndicator plugin version " + plugin.getDescription().getVersion()
+				+ " by Nathan_N" + ChatColor.RESET);
+		sender.sendMessage(ChatColor.BLUE + "More information about the plugin: https://www.spigotmc.org/resources/"
+				+ HealthIndicator.resource + "/" + ChatColor.RESET);
+		sender.sendMessage(
+				ChatColor.BLUE + "Source code: https://github.com/NathanNr/HealthIndicator/" + ChatColor.RESET);
+		sender.sendMessage(ChatColor.BLUE + "Use '/healthindicator reload' to reload the plugin." + ChatColor.RESET);
+		// playerCheckUpdate(sender);
+		sender.sendMessage(
+				ChatColor.DARK_BLUE + "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-" + ChatColor.RESET);
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+		return new ArrayList<>(0);
 	}
 }

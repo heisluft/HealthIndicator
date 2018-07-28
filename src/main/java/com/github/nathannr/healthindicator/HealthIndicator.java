@@ -18,115 +18,104 @@
 package com.github.nathannr.healthindicator;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+import net.minecraft.server.v1_12_R1.EntityArmorStand;
+import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy;
+import net.minecraft.server.v1_12_R1.PacketPlayOutEntityTeleport;
+import net.minecraft.server.v1_12_R1.PacketPlayOutSpawnEntityLiving;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Criterias;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
 
-public class HealthIndicator extends JavaPlugin {
+public class HealthIndicator extends JavaPlugin implements Listener {
 
-	public String cprefix = "[HealthIndicator] ";
-	public String prefix = "§8[§e§lHealthIndicator§8] §r";
+	static final String cprefix = "[HealthIndicator] ";
+	static final String prefix = "§8[§e§lHealthIndicator§8] §r";
+
+	private Map<UUID, EntityArmorStand> hds = new HashMap<>();
+
+	private EntityArmorStand createArmorStand(Player p) {
+		int health = (int) p.getHealth();
+		Location loc = p.getLocation();
+
+		EntityArmorStand as = new EntityArmorStand(((CraftWorld) p.getWorld()).getHandle());
+		as.setLocation(loc.getX(), loc.getY() + 2, loc.getZ(), 0, 0);
+		StringBuilder bb = new StringBuilder(ChatColor.translateAlternateColorCodes('&', "&4"));
+		for(int i = 0; i < health; i++) bb.append('\u2764');
+		as.setCustomName(bb.toString());
+		as.setInvisible(true);
+		as.setCustomNameVisible(true);
+		as.setMarker(true);
+
+		hds.put(p.getUniqueId(), as);
+
+		PacketPlayOutSpawnEntityLiving packet = new PacketPlayOutSpawnEntityLiving(as);
+		Bukkit.getOnlinePlayers().forEach((pl) -> ((CraftPlayer) pl).getHandle().playerConnection.sendPacket(packet));
+		return as;
+	}
+
+	private void renderArmorStand(Player p) {
+		EntityArmorStand as = hds.get(p.getUniqueId());
+		if(as == null) as = createArmorStand(p);
+		double health = p.getHealth();
+		Location loc = p.getLocation();
+		as.setLocation(loc.getX(), loc.getY() + 2, loc.getZ(), 0, 0);
+		StringBuilder bb = new StringBuilder(ChatColor.translateAlternateColorCodes('&', "&4"));
+		for(int i = 0; i < (int) health; i++) bb.append('\u2764');
+		if(health - (int) health != 0) bb.append(ChatColor.translateAlternateColorCodes('&', "&c\u2764"));
+		as.setCustomName(bb.toString());
+
+		PacketPlayOutEntityTeleport pp = new PacketPlayOutEntityTeleport(as);
+		Bukkit.getOnlinePlayers().forEach((pl) -> ((CraftPlayer) pl).getHandle().playerConnection.sendPacket(pp));
+	}
+
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		createArmorStand(e.getPlayer());
+	}
+
+	@EventHandler
+	public void onChangeDimension(PlayerChangedWorldEvent e) {
+		EntityArmorStand as = hds.get(e.getPlayer().getUniqueId());
+		hds.put(e.getPlayer().getUniqueId(), createArmorStand(e.getPlayer()));
+		PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(as.getId());
+		Bukkit.getOnlinePlayers().forEach((pl) -> ((CraftPlayer) pl).getHandle().playerConnection.sendPacket(packet));
+	}
+
+	@EventHandler
+	public void onLeave(PlayerQuitEvent e) {
+		hds.put(e.getPlayer().getUniqueId(), null);
+	}
 
 	static int resource = 30196;
 
-	Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
-	Objective obj = board.registerNewObjective("HealthIndicator", "Nathan_N");
-
-	Scoreboard boardn = Bukkit.getScoreboardManager().getNewScoreboard();
-	Objective objn = boardn.registerNewObjective("HealthIndicatorN", "Nathan_NNNN");
-
-	File file = new File("plugins/HealthIndicator/config.yml");
-	FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+	private File file = new File("plugins/HealthIndicator/config.yml");
+	private FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
 	@Override
 	public void onEnable() {
 		Config.initConfig();
 		Config.initLang();
-		initEvents();
-		initCmds();
-		createIndicator();
-		runIndicator();
-		System.out.println(
-				cprefix + "HealthIndicator by Nathan_N version " + this.getDescription().getVersion() + " enabled.");
+		Bukkit.getPluginManager().registerEvents(this, this);
+		new HealthIndicatorCommand(this);
+
+		getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+			for(Player p : Bukkit.getOnlinePlayers())
+				if(cfg.getList("HealthIndicator.Worlds").contains(p.getWorld().getName())) renderArmorStand(p);
+		}, 1L, 1L);
 	}
-
-	@Override
-	public void onDisable() {
-		for (Player all : Bukkit.getOnlinePlayers()) {
-			all.setScoreboard(boardn);
-		}
-		System.out.println(
-				cprefix + "HealthIndicator by Nathan_N version " + this.getDescription().getVersion() + " disabled.");
-	}
-
-	public void initEvents() {
-		// PluginManager pm = Bukkit.getPluginManager();
-	}
-
-	public void initCmds() {
-		getCommand("healthindicator").setExecutor(new HealthIndicatorCommand(this));
-	}
-
-	public void createIndicator() {
-
-		board.getObjectivesByCriteria(Criterias.HEALTH);
-		try {
-			obj.setDisplayName(
-					ChatColor.translateAlternateColorCodes('&', cfg.getString("HealthIndicator.HealthDescription")));
-		} catch (Exception e) {
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "reload"); // Bug?
-		}
-		obj.setDisplaySlot(DisplaySlot.BELOW_NAME);
-	}
-
-	public void runIndicator() {
-		this.getServer().getScheduler().runTaskTimerAsynchronously(this, new Runnable() {
-			@Override
-			public void run() {
-				for (Player all : Bukkit.getOnlinePlayers()) {
-					if (cfg.getList("HealthIndicator.Worlds").contains(all.getWorld().getName())) {
-
-						@SuppressWarnings("deprecation")
-						Score score = obj.getScore(all);
-						int scoreint = (int) all.getHealth();
-						if (!cfg.getBoolean("HealthIndicator.UseHealthPointsInsteadOfHearts")) {
-							scoreint = scoreint / 2;
-						}
-						score.setScore(scoreint);
-						all.setScoreboard(board);
-					} else {
-						all.setScoreboard(boardn);
-					}
-				}
-
-			}
-		}, 1L, 10L);
-	}
-
-	public void sendInfo(CommandSender sender) {
-		sender.sendMessage(
-				ChatColor.DARK_BLUE + "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-" + ChatColor.RESET);
-		sender.sendMessage(ChatColor.BLUE + "HealthIndicator plugin version " + this.getDescription().getVersion()
-				+ " by Nathan_N" + ChatColor.RESET);
-		sender.sendMessage(ChatColor.BLUE + "More information about the plugin: https://www.spigotmc.org/resources/"
-				+ resource + "/" + ChatColor.RESET);
-		sender.sendMessage(
-				ChatColor.BLUE + "Source code: https://github.com/NathanNr/HealthIndicator/" + ChatColor.RESET);
-		sender.sendMessage(ChatColor.BLUE + "Use '/healthindicator reload' to reload the plugin." + ChatColor.RESET);
-		// playerCheckUpdate(sender);
-		sender.sendMessage(
-				ChatColor.DARK_BLUE + "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-" + ChatColor.RESET);
-	}
-
 }

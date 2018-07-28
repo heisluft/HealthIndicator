@@ -2,6 +2,7 @@ group 'de.heisluft.healthindicator'
 version '1.0.0'
 
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -12,8 +13,59 @@ repositories {
     //For JUnit
     mavenCentral()
 }
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'plugin.yml'
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        include 'plugin.yml'
+        expand("version": project.version, "name": project.name)
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
 
 dependencies {
     compileOnly 'org.spigotmc:spigot:1.12.2-R0.1-SNAPSHOT'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    def server = System.getProperty("maven")
+    if (server == null) return
+    maven {
+        url server
+    }
+    publications {
+        testing(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+
+}
+
+publish.dependsOn jar, sourcesJar, javadocJar
+
+task copyToServer(type: Copy, dependsOn: jar) {
+    def ts = System.getProperty("serverDir")
+    if (ts == null) return
+    ts.replace('\\', '/')
+    ts += (!ts.endsWith('/') ? '/' : "").concat("plugins")
+    from jar
+    into ts
 }
