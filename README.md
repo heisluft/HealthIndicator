@@ -8,3 +8,5 @@ With HealthIndicator you can show the health of the players below their name.
 
 ## No updates
 HealthIndicator is no longer supported. You can still use this plug-in if you want to, but it's not recommended, because there won't be any updates or bug fixes in the future. If you want to, you can fork this repository, the license is [GPL-3.0](https://github.com/NathanNr/HealthIndicator/blob/master/LICENSE).
+
+### This fork will not be updated anymore as I try to avoid nms classes in my new Plugins
